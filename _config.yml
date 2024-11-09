@@ -4,13 +4,13 @@
 markdown: kramdown
 highlighter: rouge
 paginate: 5
-language: 'en-uk'
+language: "en-uk"
 
 # Website info
-name: 'Finding The Way Home'
-description: "A beautiful narrative written with the world's most elegant publishing platform. The story begins here."
+name: "Lectureizer"
+description: "Never miss out on lecture content."
 
-short_url: 'jekyllt.github.io/jasper/'
+short_url: "jekyllt.github.io/jasper/"
 google_analytics: UA-69281367-1
 disqus: username
 # edit baseurl to simply '/' if using as your personal page (instead of a project page)
@@ -32,7 +32,6 @@ plugins: [jekyll-paginate]
 # Disqus comments as a per-post basis
 # ...
 
-
 # Settings for builing master branch with travis-ci
 # with jekyll-travis
 
@@ -50,8 +49,8 @@ repo: jasper
 branch: master
 relative_source: ../jasper/
 destination: ../jasper-pages/
-production_url:  https://jekyllt.github.io/jasper/
-source_url:  https://github.com/jekyllt/jasper/
+production_url: https://jekyllt.github.io/jasper/
+source_url: https://github.com/jekyllt/jasper/
 
 exclude:
   - README.md
