@@ -38,11 +38,10 @@ img {margin-bottom: -7px}
 <header class="w3-center w3-margin-bottom">
   <h1><b>LECTURIZER</b></h1>
   <p><b>actually understand your lectures</b></p>
-  <p class="w3-padding-16"><button class="w3-button w3-black" id = "start">Record 🔴</button></p>
-  <p class="w3-padding-16"><button class="w3-button w3-black" id = "stop">Stop Recording</button></p>
-  <p class="w3-padding-16"><button class="w3-button w3-black" id = "play">Play Audio Recording</button></p>
+  <p class="w3-padding-16"><button class="w3-button w3-black" id="start">Start Recording 🔴</button></p>
+  <p class="w3-padding-16"><button class="w3-button w3-black" id="stop">Stop Recording</button></p>
   <br>
- <div id = "output"> </div>
+ <div id="output"> </div>
 </header>
 </div>
 
@@ -60,53 +59,56 @@ img {margin-bottom: -7px}
   <p class="w3-medium">Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank" class="w3-hover-text-green">w3.css</a></p>
 </footer>
 
-
 <script>
-
+let output = document.getElementById('output');
 const startButton = document.getElementById('start');
-      const stopButton = document.getElementById('stop');
-      const playButton = document.getElementById('play');
-      let output = document.getElementById('output');
-      let audioRecorder;
-      let audioChunks = [];
-      navigator.mediaDevices.getUserMedia({ audio: true })
-         .then(stream => {
+const stopButton = document.getElementById('stop');
 
-            // Initialize the media recorder object
-            audioRecorder = new MediaRecorder(stream);
+let recognition;
+let isRecording = false;
 
-            // dataavailable event is fired when the recording is stopped
-            audioRecorder.addEventListener('dataavailable', e => {
-               audioChunks.push(e.data);
-            });
+// Check if the Web Speech API is supported
+if ('webkitSpeechRecognition' in window) {
+    recognition = new webkitSpeechRecognition();
+    recognition.continuous = true;  // Keep recognizing until stopped
+    recognition.interimResults = false;  // Show only final results
+    recognition.lang = 'en-US';  // Set language
 
-            // start recording when the start button is clicked
-            startButton.addEventListener('click', () => {
-               audioChunks = [];
-               audioRecorder.start();
-               output.innerHTML = 'Recording started! Speak now.';
-            });
+    // Handle results
+    recognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+        }
+        output.innerHTML = `Transcription: ${transcript}`;
+    };
 
-            // stop recording when the stop button is clicked
-            stopButton.addEventListener('click', () => {
-               audioRecorder.stop();
-               output.innerHTML = 'Recording stopped! Click on the play button to play the recorded audio.';
-            });
+    // Handle errors
+    recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        output.innerHTML = "Error occurred in recognition: " + event.error;
+    };
+} else {
+    output.innerHTML = "Speech Recognition API not supported in this browser.";
+}
 
-            // play the recorded audio when the play button is clicked
-            playButton.addEventListener('click', () => {
-               const blobObj = new Blob(audioChunks, { type: 'audio/webm' });
-               const audioUrl = URL.createObjectURL(blobObj);
-               const audio = new Audio(audioUrl);
-               audio.play();
-               output.innerHTML = 'Playing the recorded audio!';
-            });
-         }).catch(err => {
+// Start recording
+startButton.addEventListener('click', () => {
+    if (!isRecording && recognition) {
+        recognition.start();
+        isRecording = true;
+        output.innerHTML = "Recording started. Speak now!";
+    }
+});
 
-            // If the user denies permission to record audio, then display an error.
-            console.log('Error: ' + err);
-         });
-
+// Stop recording
+stopButton.addEventListener('click', () => {
+    if (isRecording && recognition) {
+        recognition.stop();
+        isRecording = false;
+        output.innerHTML = "Recording stopped. Transcription will appear below.";
+    }
+});
 </script>
 
 </body>
