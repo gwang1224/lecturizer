@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 import os
 import whisper
 from werkzeug.utils import secure_filename
@@ -21,33 +21,33 @@ def index():
 @app.route('/', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
-        return 'No file part', 400
+        return jsonify({'error': 'No file part'}), 400
     file = request.files['file']
-    
+
     if file.filename == '':
-        return 'No selected file', 400
+        return jsonify({'error': 'No selected file'}), 400
 
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
-        # Now, run func.py with the uploaded file
+        # Run transcription and summarization
         result_text = run_func(filepath)
-        return result_text  # Display the result in the response
+        return jsonify({'summary': result_text})
 
-    return 'File type not allowed', 400
+    return jsonify({'error': 'File type not allowed'}), 400
 
 def run_func(audio_file_path):
     # Load the whisper model and transcribe the audio
     model = whisper.load_model("base")
     result = model.transcribe(audio_file_path)
     transcribed_text = result["text"]
-    
+
     # Summarize the transcribed text
     summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
     summary = summarizer(transcribed_text, max_length=130, min_length=100, do_sample=False)
-    
+
     return summary[0]['summary_text']
 
 if __name__ == '__main__':

@@ -33,7 +33,7 @@ img {margin-bottom: -7px}
 
 <!-- Header -->
 <div class="w3-opacity">
-<span class="w3-button w3-xxlarge w3-white w3-right" onclick="w3_open()"><i class="fa fa-bars"></i></span> 
+<span class="w3-button w3-xxlarge w3-white w3-right" onclick="w3_open()"><i class="fa fa-bars"></i></span>
 <div class="w3-clear"></div>
 <header class="w3-center w3-margin-bottom">
   <h1><b>LECTURIZER</b></h1>
@@ -41,18 +41,18 @@ img {margin-bottom: -7px}
   <p class="w3-padding-16"><button class="w3-button w3-black" id = "start">Record 🔴</button></p>
   <p class="w3-padding-16"><button class="w3-button w3-black" id = "stop">Stop Recording</button></p>
   <p class="w3-padding-16"><button class="w3-button w3-black" id = "play">Play Audio Recording</button></p>
-  <br> 
+  <br>
  <div id = "output"> </div>
- <form method="post" enctype="multipart/form-data">
-   <input name="file" type="file" multiple>
-   <button type="submit">Upload</button>
+ <form id="uploadForm" method="post" enctype="multipart/form-data">
+   <input name="file" type="file" id="audioFile" required>
+   <button type="submit" class="w3-button w3-black">Upload and Summarize</button>
  </form>
 </header>
 </div>
 
 <!-- End Page Content -->
 </div>
- 
+
 <script>
 
 const startButton = document.getElementById('start');
@@ -63,28 +63,28 @@ const startButton = document.getElementById('start');
       let audioChunks = [];
       navigator.mediaDevices.getUserMedia({ audio: true })
          .then(stream => {
-         
+
             // Initialize the media recorder object
             audioRecorder = new MediaRecorder(stream);
-            
+
             // dataavailable event is fired when the recording is stopped
             audioRecorder.addEventListener('dataavailable', e => {
                audioChunks.push(e.data);
             });
-            
+
             // start recording when the start button is clicked
             startButton.addEventListener('click', () => {
                audioChunks = [];
                audioRecorder.start();
                output.innerHTML = 'Recording started! Speak now.';
             });
-            
+
             // stop recording when the stop button is clicked
             stopButton.addEventListener('click', () => {
                audioRecorder.stop();
                output.innerHTML = 'Recording stopped! Click on the play button to play the recorded audio.';
             });
-            
+
             // play the recorded audio when the play button is clicked
             playButton.addEventListener('click', () => {
                const blobObj = new Blob(audioChunks, { type: 'audio/webm' });
@@ -94,11 +94,35 @@ const startButton = document.getElementById('start');
                output.innerHTML = 'Playing the recorded audio!';
             });
          }).catch(err => {
-         
+
             // If the user denies permission to record audio, then display an error.
             console.log('Error: ' + err);
          });
 
+
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fileInput = document.getElementById('audioFile');
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    try {
+        const response = await fetch('/', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        if (data.summary) {
+            document.getElementById('output').innerHTML = `<p><b>Summary:</b> ${data.summary}</p>`;
+        } else if (data.error) {
+            document.getElementById('output').innerHTML = `<p>Error: ${data.error}</p>`;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('output').innerHTML = '<p>An error occurred while processing the file.</p>';
+    }
+});
 
 </script>
 
