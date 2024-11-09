@@ -17,7 +17,7 @@ app.post("/upload", upload.single("audio"), (req, res) => {
     }
 
     // The name of the Python file (make sure it's in the same directory as your Node.js file or specify the full path)
-    const pythonFile = "tts.py"; 
+    const pythonFile = "func.py"; 
 
     // Path to the uploaded file
     const filePath = req.file.path;
