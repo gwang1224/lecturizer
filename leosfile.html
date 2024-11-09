@@ -39,7 +39,7 @@ img {margin-bottom: -7px}
   <h1><b>LECTURIZER</b></h1>
   <p><b>actually understand your lectures</b></p>
   <p class="w3-padding-16"><button class="w3-button w3-black" id="start">Start Recording 🔴</button></p>
-  <p class="w3-padding-16"><button class="w3-button w3-black" id="stop">Stop Recording</button></p>
+  <p class="w3-padding-16"><button class="w3-button w3-black" id="stop">Stop Recording & Show Transcription</button></p>
   <br>
  <div id="output"> </div>
 </header>
@@ -66,6 +66,7 @@ const stopButton = document.getElementById('stop');
 
 let recognition;
 let isRecording = false;
+let fullTranscript = '';
 
 // Check if the Web Speech API is supported
 if ('webkitSpeechRecognition' in window) {
@@ -80,7 +81,7 @@ if ('webkitSpeechRecognition' in window) {
         for (let i = event.resultIndex; i < event.results.length; i++) {
             transcript += event.results[i][0].transcript;
         }
-        output.innerHTML = `Transcription: ${transcript}`;
+        fullTranscript += transcript + ' ';
     };
 
     // Handle errors
@@ -92,21 +93,38 @@ if ('webkitSpeechRecognition' in window) {
     output.innerHTML = "Speech Recognition API not supported in this browser.";
 }
 
-// Start recording
+// Start recording and transcription
 startButton.addEventListener('click', () => {
     if (!isRecording && recognition) {
+        fullTranscript = ''; // Clear previous transcript
         recognition.start();
         isRecording = true;
         output.innerHTML = "Recording started. Speak now!";
     }
 });
 
-// Stop recording
-stopButton.addEventListener('click', () => {
+// Stop recording and show transcription
+stopButton.addEventListener('click', async () => {
     if (isRecording && recognition) {
         recognition.stop();
         isRecording = false;
-        output.innerHTML = "Recording stopped. Transcription will appear below.";
+        output.innerHTML = "Recording stopped. Processing transcription...";
+
+        try {
+            // Send transcription to backend for summarization
+            const response = await fetch("http://127.0.0.1:5000/summarize", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ text: fullTranscript })
+            });
+            const data = await response.json();
+            output.innerHTML = `Transcription: ${fullTranscript}<br><br>Summary: ${data.summary}`;
+        } catch (error) {
+            console.error("Error:", error);
+            output.innerHTML = "Failed to generate summary.";
+        }
     }
 });
 </script>
