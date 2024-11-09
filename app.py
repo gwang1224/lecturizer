@@ -1,25 +1,56 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, render_template
+import os
+import whisper
+from werkzeug.utils import secure_filename
 from transformers import pipeline
-from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
 
-# Load the summarization model
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+# Set up the upload folder and allowed extensions
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['ALLOWED_EXTENSIONS'] = {'mp3', 'wav', 'ogg', 'flac'}  # Add other audio formats as needed
 
-# Endpoint to summarize text
-@app.route('/summarize', methods=['POST'])
-def summarize_text():
-    data = request.json
-    transcript = data.get('text', '')
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
-    # Generate summary
-    summary = summarizer(transcript, max_length=130, min_length=100, do_sample=False)
-    summarized_text = summary[0]['summary_text']
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-    # Return the summary as JSON
-    return jsonify({'summary': summarized_text})
+@app.route('/', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return 'No file part', 400
+    file = request.files['file']
+    
+    if file.filename == '':
+        return 'No selected file', 400
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        # Now, run func.py with the uploaded file
+        result_text = run_func(filepath)
+        return result_text  # Display the result in the response
+
+    return 'File type not allowed', 400
+
+def run_func(audio_file_path):
+    # Load the whisper model and transcribe the audio
+    model = whisper.load_model("base")
+    result = model.transcribe(audio_file_path)
+    transcribed_text = result["text"]
+    
+    # Summarize the transcribed text
+    summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+    summary = summarizer(transcribed_text, max_length=130, min_length=100, do_sample=False)
+    
+    return summary[0]['summary_text']
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    # Ensure the upload folder exists
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    app.run(debug=True)
