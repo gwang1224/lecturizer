@@ -12,11 +12,20 @@ function checkConsent() {
     const stateSelect = document.getElementById('stateSelect');
     const selectedState = stateSelect.value;
 
-    // Check if the selected state is a one-party consent state
     if (onePartyStates.includes(selectedState)) {
-        // Redirect to a new page
+        // Redirect to a new page for one-party consent states
+        window.location.href = 'index.html';
+    } else {
+        // Show two-party consent confirmation
+        document.getElementById('twoPartyConsent').style.display = 'block';
+    }
+}
+
+function confirmConsent(consentGiven) {
+    if (consentGiven) {
         window.location.href = 'index.html';
     } else {
         alert("This is a two-party consent state. Recording requires both parties' consent.");
+        document.getElementById('twoPartyConsent').style.display = 'none';
     }
 }
