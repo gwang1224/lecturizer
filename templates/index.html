@@ -38,15 +38,17 @@ img {margin-bottom: -7px}
 <header class="w3-center w3-margin-bottom">
   <h1><b>LECTURIZER</b></h1>
   <p><b>actually understand your lectures</b></p>
-  <p class="w3-padding-16"><button class="w3-button w3-black" id = "start">Record 🔴</button></p>
-  <p class="w3-padding-16"><button class="w3-button w3-black" id = "stop">Stop Recording</button></p>
-  <p class="w3-padding-16"><button class="w3-button w3-black" id = "play">Play Audio Recording</button></p>
+
+  <!-- Toggle Record Button -->
+  <p class="w3-padding-16"><button class="w3-button w3-black" id="record">Start Recording 🔴</button></p>
+  <p class="w3-padding-16"><button class="w3-button w3-black" id="play">Play Audio Recording</button></p>
+
   <br>
- <form id="uploadForm" method="post" enctype="multipart/form-data">
-   <input name="file" type="file" id="audioFile" required>
-   <button type="submit" class="w3-button w3-black">Upload and Summarize</button>
- </form>
- <div id = "output"> </div>
+  <form id="uploadForm" method="post" enctype="multipart/form-data">
+    <input name="file" type="file" id="audioFile" required>
+    <button type="submit" class="w3-button w3-black">Upload and Summarize</button>
+  </form>
+  <div id="output"> </div>
 </header>
 </div>
 
@@ -54,51 +56,76 @@ img {margin-bottom: -7px}
 </div>
 
 <script>
+const recordButton = document.getElementById('record');
+const playButton = document.getElementById('play');
+let output = document.getElementById('output');
+let audioRecorder;
+let audioChunks = [];
+let isRecording = false;
 
-const startButton = document.getElementById('start');
-      const stopButton = document.getElementById('stop');
-      const playButton = document.getElementById('play');
-      let output = document.getElementById('output');
-      let audioRecorder;
-      let audioChunks = [];
-      navigator.mediaDevices.getUserMedia({ audio: true })
-         .then(stream => {
+navigator.mediaDevices.getUserMedia({ audio: true })
+  .then(stream => {
+    // Initialize the media recorder object
+    audioRecorder = new MediaRecorder(stream);
 
-            // Initialize the media recorder object
-            audioRecorder = new MediaRecorder(stream);
+    // dataavailable event is fired when the recording is stopped
+    audioRecorder.addEventListener('dataavailable', e => {
+      audioChunks.push(e.data);
+    });
 
-            // dataavailable event is fired when the recording is stopped
-            audioRecorder.addEventListener('dataavailable', e => {
-               audioChunks.push(e.data);
+    // Toggle recording when the record button is clicked
+    recordButton.addEventListener('click', async () => {
+    if (!isRecording) {
+        // Start recording
+        audioChunks = [];
+        audioRecorder.start();
+        isRecording = true;
+        recordButton.textContent = 'Stop Recording';
+        output.innerHTML = 'Recording started! Speak now.';
+    } else {
+        // Stop recording and send the audio file to the server
+        audioRecorder.stop();
+        isRecording = false;
+        recordButton.textContent = 'Start Recording 🔴';
+        output.innerHTML = 'Recording stopped! Processing audio...';
+
+        const blobObj = new Blob(audioChunks, { type: 'audio/webm' });
+        const formData = new FormData();
+        formData.append('file', blobObj, 'recording.webm');
+
+        console.log("Sending audio to server...");
+
+        try {
+            const response = await fetch('/', {
+                method: 'POST',
+                body: formData
             });
+            const data = await response.json();
+            console.log("Server response received:", data);
+            if (data.summary) {
+                output.innerHTML = `<p><b>Summary:</b> ${data.summary}</p>`;
+            } else if (data.error) {
+                output.innerHTML = `<p>Error: ${data.error}</p>`;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            output.innerHTML = '<p>An error occurred while processing the file.</p>';
+        }
+    }
+});
 
-            // start recording when the start button is clicked
-            startButton.addEventListener('click', () => {
-               audioChunks = [];
-               audioRecorder.start();
-               output.innerHTML = 'Recording started! Speak now.';
-            });
-
-            // stop recording when the stop button is clicked
-            stopButton.addEventListener('click', () => {
-               audioRecorder.stop();
-               output.innerHTML = 'Recording stopped! Click on the play button to play the recorded audio.';
-            });
-
-            // play the recorded audio when the play button is clicked
-            playButton.addEventListener('click', () => {
-               const blobObj = new Blob(audioChunks, { type: 'audio/webm' });
-               const audioUrl = URL.createObjectURL(blobObj);
-               const audio = new Audio(audioUrl);
-               audio.play();
-               output.innerHTML = 'Playing the recorded audio!';
-            });
-         }).catch(err => {
-
-            // If the user denies permission to record audio, then display an error.
-            console.log('Error: ' + err);
-         });
-
+    // Play the recorded audio when the play button is clicked
+    playButton.addEventListener('click', () => {
+      const blobObj = new Blob(audioChunks, { type: 'audio/webm' });
+      const audioUrl = URL.createObjectURL(blobObj);
+      const audio = new Audio(audioUrl);
+      audio.play();
+      output.innerHTML = 'Playing the recorded audio!';
+    });
+  }).catch(err => {
+    // If the user denies permission to record audio, display an error
+    console.log('Error: ' + err);
+  });
 
 document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -107,7 +134,6 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     formData.append('file', fileInput.files[0]);
 
     document.getElementById('output').innerHTML = '<p>Summarizing...</p>';
-
 
     try {
         const response = await fetch('/', {
@@ -126,7 +152,6 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
         document.getElementById('output').innerHTML = '<p>An error occurred while processing the file.</p>';
     }
 });
-
 </script>
 
 </body>
