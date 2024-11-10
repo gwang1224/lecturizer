@@ -42,11 +42,11 @@ img {margin-bottom: -7px}
   <p class="w3-padding-16"><button class="w3-button w3-black" id = "stop">Stop Recording</button></p>
   <p class="w3-padding-16"><button class="w3-button w3-black" id = "play">Play Audio Recording</button></p>
   <br>
- <div id = "output"> </div>
  <form id="uploadForm" method="post" enctype="multipart/form-data">
    <input name="file" type="file" id="audioFile" required>
    <button type="submit" class="w3-button w3-black">Upload and Summarize</button>
  </form>
+ <div id = "output"> </div>
 </header>
 </div>
 
@@ -106,6 +106,9 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     const formData = new FormData();
     formData.append('file', fileInput.files[0]);
 
+    document.getElementById('output').innerHTML = '<p>Summarizing...</p>';
+
+
     try {
         const response = await fetch('/', {
             method: 'POST',
@@ -114,7 +117,7 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 
         const data = await response.json();
         if (data.summary) {
-            document.getElementById('output').innerHTML = `<p><b>Summary:</b> ${data.summary}</p>`;
+            document.getElementById('output').innerHTML = `<p style="padding: 0px 150px 0px 150px;"><b>Summary:</b> ${data.summary}</p>`;
         } else if (data.error) {
             document.getElementById('output').innerHTML = `<p>Error: ${data.error}</p>`;
         }
