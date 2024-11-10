@@ -68,5 +68,13 @@
         </select>
         <button onclick="checkConsent()">Submit</button>
     </div>
+
+    <!-- Hidden container for two-party consent confirmation -->
+    <div class="consent-container" id="twoPartyConsent" style="display: none;">
+        <h2>Two-Party Consent Required</h2>
+        <p>Does the other party consent to the recording?</p>
+        <button onclick="confirmConsent(true)">Yes</button>
+        <button onclick="confirmConsent(false)">No</button>
+    </div>
 </body>
 </html>
