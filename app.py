@@ -17,8 +17,12 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 @app.route('/')
-def index():
-    return render_template('index.html')
+def consent():
+    return render_template('consent.html')
+
+@app.route('/recording')
+def recording():
+    return render_template('recording.html')
 
 @app.route('/', methods=['POST'])
 def upload_file():
