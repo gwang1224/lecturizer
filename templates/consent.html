@@ -63,13 +63,13 @@
             <option value="Washington">Washington</option>
             <option value="West Virginia">West Virginia</option>
             <option value="Wisconsin">Wisconsin</option>
-            <!-- Include all 50 states in similar options -->
             <option value="Wyoming">Wyoming</option>
         </select>
         <button onclick="checkConsent()">Submit</button>
     </div>
 
-    <!-- Hidden container for two-party consent confirmation -->
+    <div id="consentMessage" style="margin-top: 20px; color: red;"></div>
+
     <div class="consent-container" id="twoPartyConsent" style="display: none;">
         <h2>Two-Party Consent Required</h2>
         <p>Does the other party consent to the recording?</p>

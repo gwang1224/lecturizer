@@ -11,6 +11,7 @@ const onePartyStates = [
 function checkConsent() {
     const stateSelect = document.getElementById('stateSelect');
     const selectedState = stateSelect.value;
+    const consentMessage = document.getElementById('consentMessage');
 
     if (onePartyStates.includes(selectedState)) {
         // Redirect to a new page for one-party consent states
@@ -22,10 +23,13 @@ function checkConsent() {
 }
 
 function confirmConsent(consentGiven) {
+    const consentMessage = document.getElementById('consentMessage');
+
     if (consentGiven) {
         window.location.href = '/recording';
     } else {
-        alert("This is a two-party consent state. Recording requires both parties' consent.");
+        consentMessage.textContent = "This is a two-party consent state. Recording requires both parties' consent.";
+        // alert("This is a two-party consent state. Recording requires both parties' consent.");
         document.getElementById('twoPartyConsent').style.display = 'none';
     }
 }
