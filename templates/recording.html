@@ -1,165 +1,189 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>W3.CSS Template</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/recording.css') }}">
-<style>
-img {margin-bottom: -7px}
-.w3-row-padding img {margin-bottom: 12px}
-</style>
+  <title>W3.CSS Template</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/recording.css') }}">
+  <style>
+    img {
+      margin-bottom: -7px
+    }
+
+    .w3-row-padding img {
+      margin-bottom: 12px
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- Sidebar -->
-<nav class="w3-sidebar w3-black w3-animate-top w3-xxlarge" style="display:none;padding-top:150px" id="mySidebar">
-  <a href="javascript:void(0)" onclick="w3_close()" class="w3-button w3-black w3-xxlarge w3-padding w3-display-topright" style="padding:6px 24px">
-    <i class="fa fa-remove"></i>
-  </a>
-  <div class="w3-bar-block w3-center">
-    <a href="#" class="w3-bar-item w3-button w3-text-grey w3-hover-black">About</a>
-    <a href="#" class="w3-bar-item w3-button w3-text-grey w3-hover-black">Photos</a>
-    <a href="#" class="w3-bar-item w3-button w3-text-grey w3-hover-black">Shop</a>
-    <a href="#" class="w3-bar-item w3-button w3-text-grey w3-hover-black">Contact</a>
+  <!-- Sidebar -->
+  <nav class="w3-sidebar w3-black w3-animate-top w3-xxlarge" style="display:none;padding-top:150px" id="mySidebar">
+    <a href="javascript:void(0)" onclick="w3_close()"
+      class="w3-button w3-black w3-xxlarge w3-padding w3-display-topright" style="padding:6px 24px">
+      <i class="fa fa-remove"></i>
+    </a>
+    <div class="w3-bar-block w3-center">
+      <a href="#" class="w3-bar-item w3-button w3-text-grey w3-hover-black">About</a>
+      <a href="#" class="w3-bar-item w3-button w3-text-grey w3-hover-black">Photos</a>
+      <a href="#" class="w3-bar-item w3-button w3-text-grey w3-hover-black">Shop</a>
+      <a href="#" class="w3-bar-item w3-button w3-text-grey w3-hover-black">Contact</a>
+    </div>
+  </nav>
+
+  <!-- !PAGE CONTENT! -->
+  <div class="w3-content" style="max-width:1500px">
+
+    <!-- Header -->
+    <div class="w3-opacity">
+      <span class="w3-button w3-xxlarge w3-white w3-right" onclick="w3_open()"><i class="fa fa-bars"></i></span>
+      <div class="w3-clear"></div>
+      <header class="w3-center w3-margin-bottom">
+        <h1><b>LECTURIZER</b></h1>
+        <p><b>actually understand your lectures</b></p>
+
+        <!-- Toggle Record Button -->
+        <p class="w3-padding-16"><button style='border-radius: 25px;' class="w3-button w3-black" id="record">Start
+            Recording 🔴</button></p>
+        <p class="w3-padding-16"><button style='border-radius: 25px;' class="w3-button w3-black" id="play">Play Audio
+            Recording</button></p>
+        <p class="w3-padding-16">
+          <button style='border-radius: 25px;' class="w3-button w3-black" id="download">Download Recording</button>
+        </p>
+        <p class="w3-padding-16">
+          <button style='border-radius: 25px;' class="w3-button w3-black" id="transcribe">Transcribe Recording</button>
+        </p>
+        <br>
+        <form id="uploadForm" method="post" enctype="multipart/form-data">
+          <input name="file" type="file" id="audioFile" required>
+          <button type="submit" style='border-radius: 25px;' class="w3-button w3-black">Upload and Summarize</button>
+        </form>
+        <div id="output"> </div>
+      </header>
+    </div>
+
+    <!-- End Page Content -->
   </div>
-</nav>
 
-<!-- !PAGE CONTENT! -->
-<div class="w3-content" style="max-width:1500px">
+  <script>
+    const recordButton = document.getElementById('record');
+    const playButton = document.getElementById('play');
+    const transcribeButton = document.getElementById('transcribe');
+    let output = document.getElementById('output');
+    let audioRecorder;
+    let audioChunks = [];
+    let isRecording = false;
 
-<!-- Header -->
-<div class="w3-opacity">
-<span class="w3-button w3-xxlarge w3-white w3-right" onclick="w3_open()"><i class="fa fa-bars"></i></span>
-<div class="w3-clear"></div>
-<header class="w3-center w3-margin-bottom">
-  <h1><b>LECTURIZER</b></h1>
-  <p><b>actually understand your lectures</b></p>
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        audioRecorder = new MediaRecorder(stream);
 
-  <!-- Toggle Record Button -->
-  <p class="w3-padding-16"><button style='border-radius: 25px;' class="w3-button w3-black" id="record">Start Recording 🔴</button></p>
-  <p class="w3-padding-16"><button style='border-radius: 25px;' class="w3-button w3-black" id="play">Play Audio Recording</button></p>
-  <p class="w3-padding-16">
-    <button style='border-radius: 25px;' class="w3-button w3-black" id="download">Download Recording</button>
-  </p>
-  <p class="w3-padding-16">
-    <button style='border-radius: 25px;' class="w3-button w3-black" id="transcribe">Transcribe Recording</button>
-  </p>
-  <br>
-  <form id="uploadForm" method="post" enctype="multipart/form-data">
-    <input name="file" type="file" id="audioFile" required>
-    <button type="submit" style='border-radius: 25px;' class="w3-button w3-black">Upload and Summarize</button>
-  </form>
-  <div id="output"> </div>
-</header>
-</div>
+        audioRecorder.addEventListener('dataavailable', e => {
+          audioChunks.push(e.data);
+        });
 
-<!-- End Page Content -->
-</div>
+        // Toggle recording when the record button is clicked
+        recordButton.addEventListener('click', async () => {
+          if (!isRecording) {
+            audioChunks = [];
+            audioRecorder.start();
+            isRecording = true;
+            recordButton.textContent = 'Stop Recording';
+            output.innerHTML = 'Recording started! Speak now.';
+          } else {
+            audioRecorder.stop();
+            isRecording = false;
+            recordButton.textContent = 'Start Recording 🔴';
+            output.innerHTML = 'Recording stopped. You can now transcribe or play the audio.';
+          }
+        });
 
-<script>
-  const recordButton = document.getElementById('record');
-  const playButton = document.getElementById('play');
-  const transcribeButton = document.getElementById('transcribe');
-  let output = document.getElementById('output');
-  let audioRecorder;
-  let audioChunks = [];
-  let isRecording = false;
+        // Play the recorded audio when the play button is clicked
+        playButton.addEventListener('click', () => {
+          if (audioChunks.length > 0) {
+            const blobForPlayback = new Blob(audioChunks, { type: 'audio/webm' });
+            const audioUrl = URL.createObjectURL(blobForPlayback);
+            const audio = new Audio(audioUrl);
+            audio.play();
+            output.innerHTML = 'Playing the recorded audio!';
+          } else {
+            output.innerHTML = 'No recording available to play.';
+          }
+        });
 
-  navigator.mediaDevices.getUserMedia({ audio: true })
-    .then(stream => {
-      audioRecorder = new MediaRecorder(stream);
+        // Transcribe the recording when the transcribe button is clicked
+        transcribeButton.addEventListener('click', async () => {
+          if (audioChunks.length > 0) {
+            output.innerHTML = 'Transcribing audio...';
+            const blobForTranscription = new Blob(audioChunks, { type: 'audio/webm' });
+            const formData = new FormData();
+            formData.append('file', blobForTranscription, 'recording.webm');
 
-      audioRecorder.addEventListener('dataavailable', e => {
-        audioChunks.push(e.data);
-      });
-
-      // Toggle recording when the record button is clicked
-      recordButton.addEventListener('click', async () => {
-        if (!isRecording) {
-          audioChunks = [];
-          audioRecorder.start();
-          isRecording = true;
-          recordButton.textContent = 'Stop Recording';
-          output.innerHTML = 'Recording started! Speak now.';
-        } else {
-          audioRecorder.stop();
-          isRecording = false;
-          recordButton.textContent = 'Start Recording 🔴';
-          output.innerHTML = 'Recording stopped. You can now transcribe or play the audio.';
-        }
-      });
-
-      // Play the recorded audio when the play button is clicked
-      playButton.addEventListener('click', () => {
-        if (audioChunks.length > 0) {
-          const blobForPlayback = new Blob(audioChunks, { type: 'audio/webm' });
-          const audioUrl = URL.createObjectURL(blobForPlayback);
-          const audio = new Audio(audioUrl);
-          audio.play();
-          output.innerHTML = 'Playing the recorded audio!';
-        } else {
-          output.innerHTML = 'No recording available to play.';
-        }
-      });
-
-      // Transcribe the recording when the transcribe button is clicked
-      transcribeButton.addEventListener('click', async () => {
-        if (audioChunks.length > 0) {
-          output.innerHTML = 'Transcribing audio...';
-          const blobForTranscription = new Blob(audioChunks, { type: 'audio/webm' });
-          const formData = new FormData();
-          formData.append('file', blobForTranscription, 'recording.webm');
-
-          try {
-            const response = await fetch('/', {
+            try {
+              const response = await fetch('/', {
                 method: 'POST',
                 body: formData
-            });
-            const data = await response.json();
-            if (data.summary) {
-                output.innerHTML = `<p><b>Summary:</b> ${data.summary}</p>`;
-            } else if (data.error) {
+              });
+              const data = await response.json();
+              if (data.summary) {
+                const formattedSummary = data.summary
+                  .split('.')
+                  .map(sentence => sentence.trim())
+                  .filter(Boolean)
+                  .map(sentence => `  -  ${sentence}.`)
+                  .join('<br>');
+
+                output.innerHTML = `
+                  <div style="padding: 0px 500px 0px 500px; text-align: center;">
+                      <b>Summary:</b>
+                  </div>
+                  <div style="padding: 0px 500px 0px 500px; text-align: left;">
+                      ${formattedSummary}
+                  </div>
+                `;
+              } else if (data.error) {
                 output.innerHTML = `<p>Error: ${data.error}</p>`;
+              }
+            } catch (error) {
+              console.error('Error:', error);
+              output.innerHTML = '<p>An error occurred while processing the recording.</p>';
             }
-          } catch (error) {
-            console.error('Error:', error);
-            output.innerHTML = '<p>An error occurred while processing the recording.</p>';
+          } else {
+            output.innerHTML = 'No recording available to transcribe.';
           }
-        } else {
-          output.innerHTML = 'No recording available to transcribe.';
-        }
+        });
+
+        // Download the recorded audio
+        const downloadButton = document.getElementById('download');
+        downloadButton.addEventListener('click', () => {
+          if (audioChunks.length > 0) {
+            const blobForDownload = new Blob(audioChunks, { type: 'audio/webm' });
+            const downloadUrl = URL.createObjectURL(blobForDownload);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = downloadUrl;
+            a.download = 'recording.webm';
+            document.body.appendChild(a);
+            a.click();
+            URL.revokeObjectURL(downloadUrl);
+            document.body.removeChild(a);
+          } else {
+            output.innerHTML = 'No recording available to download.';
+          }
+        });
+      })
+      .catch(err => {
+        console.log('Error: ' + err);
+        output.innerHTML = '<p>Error accessing the microphone.</p>';
       });
 
-      // Download the recorded audio
-      const downloadButton = document.getElementById('download');
-      downloadButton.addEventListener('click', () => {
-        if (audioChunks.length > 0) {
-          const blobForDownload = new Blob(audioChunks, { type: 'audio/webm' });
-          const downloadUrl = URL.createObjectURL(blobForDownload);
-          const a = document.createElement('a');
-          a.style.display = 'none';
-          a.href = downloadUrl;
-          a.download = 'recording.webm';
-          document.body.appendChild(a);
-          a.click();
-          URL.revokeObjectURL(downloadUrl);
-          document.body.removeChild(a);
-        } else {
-          output.innerHTML = 'No recording available to download.';
-        }
-      });
-    })
-    .catch(err => {
-      console.log('Error: ' + err);
-      output.innerHTML = '<p>Error accessing the microphone.</p>';
-    });
-
-  // Upload form submission for file upload and summarization
-  document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+    // Upload form submission for file upload and summarization
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const fileInput = document.getElementById('audioFile');
       const formData = new FormData();
@@ -168,23 +192,38 @@ img {margin-bottom: -7px}
       output.innerHTML = '<p>Summarizing...</p>';
 
       try {
-          const response = await fetch('/', {
-              method: 'POST',
-              body: formData
-          });
+        const response = await fetch('/', {
+          method: 'POST',
+          body: formData
+        });
 
-          const data = await response.json();
-          if (data.summary) {
-              output.innerHTML = `<p style="padding: 0px 150px 0px 150px;"><b>Summary:</b> ${data.summary}</p>`;
-          } else if (data.error) {
-              output.innerHTML = `<p>Error: ${data.error}</p>`;
-          }
+        const data = await response.json();
+        if (data.summary) {
+          const formattedSummary = data.summary
+            .split('.')
+            .map(sentence => sentence.trim())
+            .filter(Boolean)
+            .map(sentence => `  -  ${sentence}.`)
+            .join('<br>');
+
+          output.innerHTML = `
+            <div style="padding: 0px 500px 0px 500px; text-align: center;">
+                <b>Summary:</b>
+            </div>
+            <div style="padding: 0px 500px 0px 500px; text-align: left;">
+                ${formattedSummary}
+            </div>
+          `;
+        } else if (data.error) {
+          output.innerHTML = `<p>Error: ${data.error}</p>`;
+        }
       } catch (error) {
-          console.error('Error:', error);
-          output.innerHTML = '<p>An error occurred while processing the file.</p>';
+        console.error('Error:', error);
+        output.innerHTML = '<p>An error occurred while processing the file.</p>';
       }
-  });
+    });
   </script>
 
 </body>
+
 </html>

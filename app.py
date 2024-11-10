@@ -58,12 +58,26 @@ def run_func(audio_file_path):
     transcribed_text = result["text"]
     print("Transcription complete:", transcribed_text[:100])  # Log first 100 chars of transcript
 
-    print("Summarizing text...")  # Debugging statement
-    summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
-    summary = summarizer(transcribed_text, max_length=130, min_length=5, do_sample=False)
-    print("Summary complete:", summary[0]['summary_text'])  # Debugging statement
+    # Define chunk size based on the model's input limit
+    max_input_tokens = 1024  # Adjust as needed for the model
+    chunk_size = max_input_tokens // 2  # Chunk size in tokens
+    summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
 
-    return summary[0]['summary_text']
+    # Split text into chunks
+    text_chunks = [transcribed_text[i:i + chunk_size] for i in range(0, len(transcribed_text), chunk_size)]
+    summaries = []
+
+    # Summarize each chunk
+    for chunk in text_chunks:
+        print("Summarizing chunk...")  # Debugging statement
+        summary = summarizer(chunk, max_length=int(len(chunk) / 2), min_length=10, do_sample=False)
+        summaries.append(summary[0]['summary_text'])
+
+    # Combine all summaries
+    combined_summary = ' '.join(summaries)
+    print("Combined summary complete:", combined_summary[:100])  # Debugging statement
+
+    return combined_summary
 
 if __name__ == '__main__':
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
