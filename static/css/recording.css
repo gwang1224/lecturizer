@@ -1,0 +1,24 @@
+body {
+    font-family: 'Times New Roman', Times, serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #3c76e1; /* Blue background */
+    color: #efefef; /* Light text color */
+    opacity: 1.0;
+}
+
+button:hover {
+    background-color: #ffa726;
+}
+
+h1 {
+    color: #FFD700; /* Yellow color for main heading */
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 5em;
+    text-align: center;
+    margin-bottom: 20px;
+}
