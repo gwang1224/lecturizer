@@ -7,21 +7,21 @@ body {
     justify-content: center;
     min-height: 100vh;
     margin: 0;
-    background-color: #3c76e1; /* Blue background */
-    color: #efefef; /* Light text color */
+    color: black;
+    opacity: 1.0;
 }
 
-/* Main heading styling (centered on top) */
 h1 {
-    color: #FFD700; /* Yellow color for main heading */
+    color: #2e123f;
     font-size: 5em;
     text-align: center;
     margin-bottom: 20px;
+    opacity: 1.0;
 }
 
 /* Container styling */
 .container {
-    background-color: #3cdbe1; /* Light teal background */
+    background-color: #f4decb; /* Light teal background */
     color: #000000; /* Dark text color */
     text-align: center;
     border: 1px solid #ddd;

@@ -4,11 +4,11 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Consent Check</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/consent.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/recording.css') }}">
         <script src="{{ url_for('static', filename='js/consent.js') }}" defer></script>
     </head>
 <body>
-    <h1>Lecturizer</h1>
+    <h1>LECTURIZER</h1>
     <div class="container">
         <h1>Select Your State</h1>
         <p>Select your state to check if one-party consent applies:</p>
@@ -65,7 +65,7 @@
             <option value="Wisconsin">Wisconsin</option>
             <option value="Wyoming">Wyoming</option>
         </select>
-        <button onclick="checkConsent()">Submit</button>
+        <p class="w3-padding-16"><button style='border-radius: 25px;' class="w3-button w3-black" onclick="checkConsent()">Submit</button></p>
     </div>
 
     <div id="consentMessage" style="margin-top: 20px; color: red;"></div>

@@ -6,9 +6,8 @@ body {
     justify-content: center;
     min-height: 100vh;
     margin: 0;
-    background-color: #3c76e1; /* Blue background */
-    color: #efefef; /* Light text color */
-    opacity: 1.0;
+    color: black;
+    /* opacity: 1.0; */
 }
 
 button:hover {
@@ -16,9 +15,76 @@ button:hover {
 }
 
 h1 {
-    color: #FFD700; /* Yellow color for main heading */
+    color: #243642; /* Yellow color for main heading */
     font-family: 'Times New Roman', Times, serif;
     font-size: 5em;
     text-align: center;
     margin-bottom: 20px;
+}
+
+/* Container styling */
+.container {
+    background-color: #E2F1E7; /* Light teal background */
+    color: #000000; /* Dark text color */
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    padding: 30px 40px;
+    max-width: 400px;
+    width: 90%;
+}
+
+/* Inner container heading */
+.container h1 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+    color: #000000; /* Yellow color for inner heading */
+}
+
+/* Paragraph styling */
+.container p {
+    font-size: 1em;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Styling for select dropdown and button */
+select, button {
+    padding: 12px;
+    font-size: 1em;
+    margin-top: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    transition: 0.3s;
+}
+
+select:hover, button:hover {
+    border-color: #FFD700; /* Yellow border on hover */
+}
+
+.consent-container {
+    background-color: #629584;
+    color: #000;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    margin-top: 20px;
+}
+.consent-container h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+.consent-container button {
+    width: 100px;
+    margin: 10px;
+    padding: 10px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 }
