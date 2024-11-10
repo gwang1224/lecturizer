@@ -45,6 +45,9 @@ img {margin-bottom: -7px}
   <p class="w3-padding-16">
     <button style='border-radius: 25px;' class="w3-button w3-black" id="download">Download Recording</button>
   </p>
+  <p class="w3-padding-16">
+    <button style='border-radius: 25px;' class="w3-button w3-black" id="transcribe">Transcribe Recording</button>
+  </p>
   <br>
   <form id="uploadForm" method="post" enctype="multipart/form-data">
     <input name="file" type="file" id="audioFile" required>
@@ -60,6 +63,7 @@ img {margin-bottom: -7px}
 <script>
   const recordButton = document.getElementById('record');
   const playButton = document.getElementById('play');
+  const transcribeButton = document.getElementById('transcribe');
   let output = document.getElementById('output');
   let audioRecorder;
   let audioChunks = [];
@@ -73,72 +77,81 @@ img {margin-bottom: -7px}
         audioChunks.push(e.data);
       });
 
+      // Toggle recording when the record button is clicked
       recordButton.addEventListener('click', async () => {
-      if (!isRecording) {
-        audioChunks = [];
-        audioRecorder.start();
-        isRecording = true;
-        recordButton.textContent = 'Stop Recording';
-        output.innerHTML = 'Recording started! Speak now.';
-      } else {
-        audioRecorder.stop();
-        isRecording = false;
-        recordButton.textContent = 'Start Recording 🔴';
-        output.innerHTML = 'Recording stopped! Transcribing audio...';
-
-        // Create a Blob for transcription without modifying audioChunks
-        const blobForTranscription = new Blob(audioChunks, { type: 'audio/webm' });
-        const formData = new FormData();
-        formData.append('file', blobForTranscription, 'recording.webm');
-
-        try {
-          const response = await fetch('/', {
-              method: 'POST',
-              body: formData
-          });
-          const data = await response.json();
-          if (data.summary) {
-              output.innerHTML = `<p><b>Summary:</b> ${data.summary}</p>`;
-          } else if (data.error) {
-              output.innerHTML = `<p>Error: ${data.error}</p>`;
-          }
-        } catch (error) {
-          console.error('Error:', error);
-          output.innerHTML = '<p>An error occurred while processing the recording.</p>';
+        if (!isRecording) {
+          audioChunks = [];
+          audioRecorder.start();
+          isRecording = true;
+          recordButton.textContent = 'Stop Recording';
+          output.innerHTML = 'Recording started! Speak now.';
+        } else {
+          audioRecorder.stop();
+          isRecording = false;
+          recordButton.textContent = 'Start Recording 🔴';
+          output.innerHTML = 'Recording stopped. You can now transcribe or play the audio.';
         }
-      }
-    });
+      });
 
-    // Play the recorded audio when the play button is clicked
-    playButton.addEventListener('click', () => {
-      if (audioChunks.length > 0) {
-        const blobForPlayback = new Blob(audioChunks, { type: 'audio/webm' });
-        const audioUrl = URL.createObjectURL(blobForPlayback);
-        const audio = new Audio(audioUrl);
-        audio.play();
-        output.innerHTML = 'Playing the recorded audio!';
-      } else {
-        output.innerHTML = 'No recording available to play.';
-      }
-    });
-    const downloadButton = document.getElementById('download');
+      // Play the recorded audio when the play button is clicked
+      playButton.addEventListener('click', () => {
+        if (audioChunks.length > 0) {
+          const blobForPlayback = new Blob(audioChunks, { type: 'audio/webm' });
+          const audioUrl = URL.createObjectURL(blobForPlayback);
+          const audio = new Audio(audioUrl);
+          audio.play();
+          output.innerHTML = 'Playing the recorded audio!';
+        } else {
+          output.innerHTML = 'No recording available to play.';
+        }
+      });
 
-    downloadButton.addEventListener('click', () => {
-      if (audioChunks.length > 0) {
-        const blobForDownload = new Blob(audioChunks, { type: 'audio/webm' });
-        const downloadUrl = URL.createObjectURL(blobForDownload);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = downloadUrl;
-        a.download = 'recording.webm';
-        document.body.appendChild(a);
-        a.click();
-        URL.revokeObjectURL(downloadUrl);
-        document.body.removeChild(a);
-      } else {
-        output.innerHTML = 'No recording available to download.';
-      }
-    });
+      // Transcribe the recording when the transcribe button is clicked
+      transcribeButton.addEventListener('click', async () => {
+        if (audioChunks.length > 0) {
+          output.innerHTML = 'Transcribing audio...';
+          const blobForTranscription = new Blob(audioChunks, { type: 'audio/webm' });
+          const formData = new FormData();
+          formData.append('file', blobForTranscription, 'recording.webm');
+
+          try {
+            const response = await fetch('/', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (data.summary) {
+                output.innerHTML = `<p><b>Summary:</b> ${data.summary}</p>`;
+            } else if (data.error) {
+                output.innerHTML = `<p>Error: ${data.error}</p>`;
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            output.innerHTML = '<p>An error occurred while processing the recording.</p>';
+          }
+        } else {
+          output.innerHTML = 'No recording available to transcribe.';
+        }
+      });
+
+      // Download the recorded audio
+      const downloadButton = document.getElementById('download');
+      downloadButton.addEventListener('click', () => {
+        if (audioChunks.length > 0) {
+          const blobForDownload = new Blob(audioChunks, { type: 'audio/webm' });
+          const downloadUrl = URL.createObjectURL(blobForDownload);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = downloadUrl;
+          a.download = 'recording.webm';
+          document.body.appendChild(a);
+          a.click();
+          URL.revokeObjectURL(downloadUrl);
+          document.body.removeChild(a);
+        } else {
+          output.innerHTML = 'No recording available to download.';
+        }
+      });
     })
     .catch(err => {
       console.log('Error: ' + err);
