@@ -42,7 +42,9 @@ img {margin-bottom: -7px}
   <!-- Toggle Record Button -->
   <p class="w3-padding-16"><button style='border-radius: 25px;' class="w3-button w3-black" id="record">Start Recording 🔴</button></p>
   <p class="w3-padding-16"><button style='border-radius: 25px;' class="w3-button w3-black" id="play">Play Audio Recording</button></p>
-
+  <p class="w3-padding-16">
+    <button style='border-radius: 25px;' class="w3-button w3-black" id="download">Download Recording</button>
+  </p>
   <br>
   <form id="uploadForm" method="post" enctype="multipart/form-data">
     <input name="file" type="file" id="audioFile" required>
@@ -56,103 +58,120 @@ img {margin-bottom: -7px}
 </div>
 
 <script>
-const recordButton = document.getElementById('record');
-const playButton = document.getElementById('play');
-let output = document.getElementById('output');
-let audioRecorder;
-let audioChunks = [];
-let isRecording = false;
+  const recordButton = document.getElementById('record');
+  const playButton = document.getElementById('play');
+  let output = document.getElementById('output');
+  let audioRecorder;
+  let audioChunks = [];
+  let isRecording = false;
 
-navigator.mediaDevices.getUserMedia({ audio: true })
-  .then(stream => {
-    // Initialize the media recorder object
-    audioRecorder = new MediaRecorder(stream);
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(stream => {
+      audioRecorder = new MediaRecorder(stream);
 
-    // dataavailable event is fired when the recording is stopped
-    audioRecorder.addEventListener('dataavailable', e => {
-      audioChunks.push(e.data);
-    });
+      audioRecorder.addEventListener('dataavailable', e => {
+        audioChunks.push(e.data);
+      });
 
-    // Toggle recording when the record button is clicked
-    recordButton.addEventListener('click', async () => {
-    if (!isRecording) {
-        // Start recording
+      recordButton.addEventListener('click', async () => {
+      if (!isRecording) {
         audioChunks = [];
         audioRecorder.start();
         isRecording = true;
         recordButton.textContent = 'Stop Recording';
         output.innerHTML = 'Recording started! Speak now.';
-    } else {
-        // Stop recording and send the audio file to the server
+      } else {
         audioRecorder.stop();
         isRecording = false;
         recordButton.textContent = 'Start Recording 🔴';
-        output.innerHTML = 'Recording stopped! Processing audio...';
+        output.innerHTML = 'Recording stopped! Transcribing audio...';
 
-        const blobObj = new Blob(audioChunks, { type: 'audio/webm' });
+        // Create a Blob for transcription without modifying audioChunks
+        const blobForTranscription = new Blob(audioChunks, { type: 'audio/webm' });
         const formData = new FormData();
-        formData.append('file', blobObj, 'recording.webm');
-
-        console.log("Sending audio to server...");
+        formData.append('file', blobForTranscription, 'recording.webm');
 
         try {
-            const response = await fetch('/', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await response.json();
-            console.log("Server response received:", data);
-            if (data.summary) {
-                output.innerHTML = `<p><b>Summary:</b> ${data.summary}</p>`;
-            } else if (data.error) {
-                output.innerHTML = `<p>Error: ${data.error}</p>`;
-            }
+          const response = await fetch('/', {
+              method: 'POST',
+              body: formData
+          });
+          const data = await response.json();
+          if (data.summary) {
+              output.innerHTML = `<p><b>Summary:</b> ${data.summary}</p>`;
+          } else if (data.error) {
+              output.innerHTML = `<p>Error: ${data.error}</p>`;
+          }
         } catch (error) {
-            console.error('Error:', error);
-            output.innerHTML = '<p>An error occurred while processing the file.</p>';
+          console.error('Error:', error);
+          output.innerHTML = '<p>An error occurred while processing the recording.</p>';
         }
-    }
-});
+      }
+    });
 
     // Play the recorded audio when the play button is clicked
     playButton.addEventListener('click', () => {
-      const blobObj = new Blob(audioChunks, { type: 'audio/webm' });
-      const audioUrl = URL.createObjectURL(blobObj);
-      const audio = new Audio(audioUrl);
-      audio.play();
-      output.innerHTML = 'Playing the recorded audio!';
+      if (audioChunks.length > 0) {
+        const blobForPlayback = new Blob(audioChunks, { type: 'audio/webm' });
+        const audioUrl = URL.createObjectURL(blobForPlayback);
+        const audio = new Audio(audioUrl);
+        audio.play();
+        output.innerHTML = 'Playing the recorded audio!';
+      } else {
+        output.innerHTML = 'No recording available to play.';
+      }
     });
-  }).catch(err => {
-    // If the user denies permission to record audio, display an error
-    console.log('Error: ' + err);
+    const downloadButton = document.getElementById('download');
+
+    downloadButton.addEventListener('click', () => {
+      if (audioChunks.length > 0) {
+        const blobForDownload = new Blob(audioChunks, { type: 'audio/webm' });
+        const downloadUrl = URL.createObjectURL(blobForDownload);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = downloadUrl;
+        a.download = 'recording.webm';
+        document.body.appendChild(a);
+        a.click();
+        URL.revokeObjectURL(downloadUrl);
+        document.body.removeChild(a);
+      } else {
+        output.innerHTML = 'No recording available to download.';
+      }
+    });
+    })
+    .catch(err => {
+      console.log('Error: ' + err);
+      output.innerHTML = '<p>Error accessing the microphone.</p>';
+    });
+
+  // Upload form submission for file upload and summarization
+  document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('audioFile');
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      output.innerHTML = '<p>Summarizing...</p>';
+
+      try {
+          const response = await fetch('/', {
+              method: 'POST',
+              body: formData
+          });
+
+          const data = await response.json();
+          if (data.summary) {
+              output.innerHTML = `<p style="padding: 0px 150px 0px 150px;"><b>Summary:</b> ${data.summary}</p>`;
+          } else if (data.error) {
+              output.innerHTML = `<p>Error: ${data.error}</p>`;
+          }
+      } catch (error) {
+          console.error('Error:', error);
+          output.innerHTML = '<p>An error occurred while processing the file.</p>';
+      }
   });
-
-document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fileInput = document.getElementById('audioFile');
-    const formData = new FormData();
-    formData.append('file', fileInput.files[0]);
-
-    document.getElementById('output').innerHTML = '<p>Summarizing...</p>';
-
-    try {
-        const response = await fetch('/', {
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await response.json();
-        if (data.summary) {
-            document.getElementById('output').innerHTML = `<p style="padding: 0px 150px 0px 150px;"><b>Summary:</b> ${data.summary}</p>`;
-        } else if (data.error) {
-            document.getElementById('output').innerHTML = `<p>Error: ${data.error}</p>`;
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('output').innerHTML = '<p>An error occurred while processing the file.</p>';
-    }
-});
-</script>
+  </script>
 
 </body>
 </html>
