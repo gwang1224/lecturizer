@@ -15,7 +15,7 @@ function checkConsent() {
     // Check if the selected state is a one-party consent state
     if (onePartyStates.includes(selectedState)) {
         // Redirect to a new page
-        window.location.href = 'consent-allowed.html';
+        window.location.href = 'index.html';
     } else {
         alert("This is a two-party consent state. Recording requires both parties' consent.");
     }
