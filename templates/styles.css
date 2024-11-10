@@ -1,0 +1,75 @@
+/* General body styling */
+body {
+    font-family: 'Times New Roman', Times, serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #3c76e1; /* Blue background */
+    color: #efefef; /* Light text color */
+}
+
+/* Main heading styling (centered on top) */
+h1 {
+    color: #FFD700; /* Yellow color for main heading */
+    font-size: 5em;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Container styling */
+.container {
+    background-color: #3cdbe1; /* Light teal background */
+    color: #000000; /* Dark text color */
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    padding: 30px 40px;
+    max-width: 400px;
+    width: 90%;
+}
+
+/* Inner container heading */
+.container h1 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+    color: #000000; /* Yellow color for inner heading */
+}
+
+/* Paragraph styling */
+.container p {
+    font-size: 1em;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Styling for select dropdown and button */
+select, button {
+    width: 100%;
+    padding: 12px;
+    font-size: 1em;
+    margin-top: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    transition: 0.3s;
+}
+
+select:hover, button:hover {
+    border-color: #FFD700; /* Yellow border on hover */
+}
+
+/* Button styling */
+button {
+    background-color: #00a2ff;
+    color: #fff;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #FFA500; /* Slightly darker yellow on hover */
+}
